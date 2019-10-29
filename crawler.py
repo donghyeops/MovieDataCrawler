@@ -159,7 +159,8 @@ class Crawler:
                 if crawl_image:
                     try:
                         img_url = m_soup.select('div.poster')[0].select('img')[0]['src']
-                        img_file, _ = request.urlretrieve(img_url.split('?')[0], os.path.join(self.image_path, f'{code}.jpg'))
+                        request.urlretrieve(img_url.split('?')[0], os.path.join(self.image_path, f'{code}.jpg'))
+                        img_file = f'{code}.jpg'
                     except IndexError:
                         img_file = None
 
