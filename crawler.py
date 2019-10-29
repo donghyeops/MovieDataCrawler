@@ -6,6 +6,7 @@ import re
 import json
 import os
 from datetime import datetime as dt
+from NaverCaptcha.sites.naver import Naver
 
 class Crawler:
     def __init__(self, target_day=None, dataset_path='./crawled_dataset.json'):
@@ -21,7 +22,7 @@ class Crawler:
 
         self.db = {}
         if os.path.exists(self.dataset_path):
-            with open(self.dataset_path, 'r') as f:
+            with open(self.dataset_path, 'r', encoding='utf-8') as f:
                 self.db = json.load(f)
                 print(f'load exist dataset (len:{len(self.db)})')
 
@@ -43,6 +44,8 @@ class Crawler:
         print('-- start crawling --')
         n_data = 0
         if naver_account:
+            naver = Naver(self.driver, naver_account['id'], naver_account['pw'])
+            naver.clipboard_login(naver.ID, naver.PW)
             print('* login naver *')
 
         for i, page in enumerate(range(start_page, end_page + 1)):
