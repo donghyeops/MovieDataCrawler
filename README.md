@@ -1,6 +1,8 @@
 # naver_movie_crawling
 네이버 영화 사이트에서 영화의 메타 데이터를 크롤링합니다.
 
+로그인 기능은 선택사항이며 [NaverCaptcha 오픈소스](https://github.com/lumyjuwon/NaverCaptcha)를 활용하였습니다.
+
 ## Example
 ```
 "180372": {  
