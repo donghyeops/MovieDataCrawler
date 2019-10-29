@@ -1,13 +1,18 @@
 # naver_movie_crawling
 네이버 영화 사이트에서 영화의 메타 데이터를 크롤링합니다.
 
-로그인 기능은 선택사항이며 [NaverCaptcha 오픈소스](https://github.com/lumyjuwon/NaverCaptcha)를 활용하였습니다.
+크롤링 구간 및 메타 데이터 범위는 config.ini로 설정 가능합니다.
+
+또한 로그인 기능은 선택사항이며 [NaverCaptcha 오픈소스](https://github.com/lumyjuwon/NaverCaptcha)를 활용하였습니다.
+
+대상 웹사이트 예시 : [URL(date=20100101)](https://movie.naver.com/movie/sdb/rank/rmovie.nhn?sel=cnt&tg=0&date=20100101)
 
 ## Example
 ```
 "180372": {  
 		"title": "극장판 공룡메카드: 타이니소어의 섬",  
 		"mv_code": "180372",  
+		"image": "180372.jpg", 
 		"categories": [  
 			"애니메이션"  
 		],  
@@ -26,9 +31,12 @@
 ## Dependency
  - selenium
  - beautifulsoup4
+ - pyperclip
+ - pywin32
  
 ## Crawling Target
  - 영화제목
+ - 포스터 이미지 (config.ini에서 설정)
  - 영화 카테고리 (ex: 멜로, 액션, SF, ...)
  - 국가 (한국, 영국, 미국, ...)
  - 관객 평점
