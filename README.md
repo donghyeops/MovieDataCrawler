@@ -10,7 +10,7 @@
 ## How to run
 ```
 pip install -r requirements.txt
-python data_crawling.py
+python data_crawling.py # python version <= 3.7
 ```
 ## Example
 ```
