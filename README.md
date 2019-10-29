@@ -9,12 +9,12 @@
 
 
 
-## How to run
+## How to Run
 ```
 pip install -r requirements.txt
 python data_crawling.py # python version <= 3.7
 ```
-## Example
+## Dataset Example
 ```
 "180372": {  
 		"title": "극장판 공룡메카드: 타이니소어의 섬",  
