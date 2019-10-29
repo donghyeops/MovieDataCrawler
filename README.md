@@ -1,11 +1,13 @@
 # naver_movie_crawling
 네이버 영화 사이트에서 영화의 메타 데이터를 크롤링합니다.
 
-크롤링 구간 및 메타 데이터 범위는 config.ini로 설정 가능합니다.
-
-또한 로그인 기능은 선택사항이며 [NaverCaptcha 오픈소스](https://github.com/lumyjuwon/NaverCaptcha)를 활용하였습니다.
+크롤링 구간 및 메타 데이터 범위는 config.ini에서 설정 가능합니다.
 
 대상 웹사이트 예시 : [URL(date=20100101)](https://movie.naver.com/movie/sdb/rank/rmovie.nhn?sel=cnt&tg=0&date=20100101)
+
+[로그인 기능은 선택사항이며 [NaverCaptcha 오픈소스](https://github.com/lumyjuwon/NaverCaptcha)를 활용하였습니다.]
+
+
 
 ## How to run
 ```
