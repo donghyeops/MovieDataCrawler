@@ -1,4 +1,4 @@
-# naver_movie_crawling
+# Movie Data Crawlor
 네이버 영화 웹사이트에서 영화 메타 데이터를 크롤링합니다.
 
 크롤링 구간 및 메타 데이터 범위는 config.ini에서 설정 가능합니다.
