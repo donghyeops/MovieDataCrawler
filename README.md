@@ -7,6 +7,11 @@
 
 대상 웹사이트 예시 : [URL(date=20100101)](https://movie.naver.com/movie/sdb/rank/rmovie.nhn?sel=cnt&tg=0&date=20100101)
 
+## How to run
+```
+pip install -r requirements.txt
+python data_crawling.py
+```
 ## Example
 ```
 "180372": {  
