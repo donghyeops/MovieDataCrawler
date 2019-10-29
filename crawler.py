@@ -2,26 +2,29 @@
 
 from selenium import webdriver
 from bs4 import BeautifulSoup
+from urllib import request
+
 import re
 import json
 import os
-from datetime import datetime as dt
+import datetime as dt
+
+
 from NaverCaptcha.sites.naver import Naver
 
+
 class Crawler:
-    def __init__(self, target_day=None, dataset_path='./crawled_dataset.json'):
-        if not target_day:
-            now = dt.now()
-            target_day = f'{now.year}{now.month:02}{now.day - 1:02}'  # 현재 날짜는 아직 안올라온 경우가 있음
-        self.main_url = f'https://movie.naver.com/movie/sdb/rank/rmovie.nhn?sel=pnt&date={target_day}'
+    def __init__(self, dataset_path='./crawled_dataset.json', data_overwriting=False):
+        self.main_url = 'https://movie.naver.com/movie/sdb/rank/rmovie.nhn?sel=cnt&tg=0'
         self.dataset_path = dataset_path
+        self.image_path = './images'
 
         self.int_parser = re.compile('\d+')
         self.link_parser = re.compile('<a href.*</a>')
         self.score_parser = re.compile('\d+\.\d+')
 
         self.db = {}
-        if os.path.exists(self.dataset_path):
+        if not data_overwriting and os.path.exists(self.dataset_path):
             with open(self.dataset_path, 'r', encoding='utf-8') as f:
                 self.db = json.load(f)
                 print(f'load exist dataset (len:{len(self.db)})')
@@ -32,15 +35,22 @@ class Crawler:
 
 
     def init_browser(self):
-        self.driver = webdriver.Chrome('C:/Users/sdh/Desktop/study/project/chromedriver.exe')
+        self.driver = webdriver.Chrome('chromedriver.exe')
         self.driver.implicitly_wait(self.wt)
 
     def save_db(self):
         with open(self.dataset_path, 'w', encoding='utf-8') as f:
             json.dump(self.db, f, indent='\t', ensure_ascii=False)
-        print(f'save dataset (n:{len(self.db)}')
+        print(f'save dataset (n:{len(self.db)})')
 
-    def start_crawling(self, start_page=1, end_page=10, naver_account=None):
+    @staticmethod
+    def daterange(start_page :str, end_page :str):
+        start_date = dt.datetime.strptime(start_page, '%Y%m%d').date()
+        end_date = dt.datetime.strptime(end_page, '%Y%m%d').date()
+        for n in range((end_date - start_date).days + 1):
+            yield (start_date + dt.timedelta(n)).strftime('%Y%m%d')
+
+    def start_crawling(self, start_page='20100101', end_page='20100101', crawl_image=False, naver_account=None, print_title=False):
         print('-- start crawling --')
         n_data = 0
         if naver_account:
@@ -48,12 +58,15 @@ class Crawler:
             naver.clipboard_login(naver.ID, naver.PW)
             print('* login naver *')
 
-        for i, page in enumerate(range(start_page, end_page + 1)):
-            if i != 0 and i % 10:
-                self.save_db()
-            print(f'target page: {page}')
+        if crawl_image:
+            os.makedirs(self.image_path, exist_ok=True)
 
-            target_url = f'{self.main_url}&page={page}'
+        for i, date_token in enumerate(self.daterange(start_page, end_page)):
+            if i != 0 and i % 10:  # 10페이지(MV 500개) 마다 저장
+                self.save_db()
+            print(f'target date: {date_token}')
+
+            target_url = f'{self.main_url}&date={date_token}'
             self.driver.get(target_url)
             self.driver.implicitly_wait(self.wt)
 
@@ -70,7 +83,8 @@ class Crawler:
                     title = tags['title']
                 except:  # 주석 코드가 잡힌 경우
                     continue
-                print(title)
+                if print_title:
+                    print(f'\t - {title}')
                 link = tags['href']  # /movie/bi/mi/basic.nhn?code=182699
                 code = self.int_parser.findall(link)[0]
                 if code in self.db:  # 중복 제외
@@ -81,28 +95,40 @@ class Crawler:
                 m_soup = BeautifulSoup(self.driver.page_source)
                 summary = m_soup.select('h5.h_tx_story')
                 summary = summary[0].text.replace('\xa0', '\n') if summary else ''
+                summary = summary.replace(' | ', '\n').replace('|', '')
 
                 contents = m_soup.select('p.con_tx')
                 contents = contents[0].text.replace('\xa0', '\n') if contents else ''
 
-                netizen_score = '0'
-                _s = m_soup.select('div.main_score > div.score')
-                ems = _s[0].select('div.star_score')[0].select('em')
-                if ems:
-                    for x in ems:
-                        netizen_score += x.text
+                netizen_score = '-1'
+                try:
+                    _s = m_soup.select('div.main_score > div.score')
+                    ems = _s[0].select('div.star_score')[0].select('em')
+                    if ems:
+                        for x in ems:
+                            netizen_score += x.text
+                except IndexError:
+                    pass
                 netizen_score = float(netizen_score)
 
-                audience_score = '0'
-                _s = m_soup.select('div.main_score > div.score_left')
-                ems = _s[0].select('div.star_score')[0].select('em')
-                if ems:
-                    for x in ems:
-                        audience_score += x.text
+                audience_score = '-1'
+                try:
+                    _s = m_soup.select('div.main_score > div.score_left')
+                    ems = _s[0].select('div.star_score')[0].select('em')
+                    if ems:
+                        for x in ems:
+                            audience_score += x.text
+                except IndexError:
+                    pass
                 audience_score = float(audience_score)
 
-                reple = m_soup.select('div.score_reple > p')
-                reple = reple[0].text.replace('\xa0', '\n') if reple else ''
+                reple = ''
+                try:
+                    reple = m_soup.select('div.score_reple > p')
+                    reple = reple[0].text.replace('\xa0', '\n') if reple else ''
+                    reple = reple.lstrip().rstrip()
+                except IndexError:
+                    pass
 
                 spec = m_soup.select('dl.info_spec > dd > p')[0].select('span')
 
@@ -116,6 +142,10 @@ class Crawler:
 
                 showtime = int(self.int_parser.findall(spec[2].text)[0])
 
+                if crawl_image:
+                    img_url = m_soup.select('div.poster')[0].select('img')[0]['src']
+                    img_file, _ = request.urlretrieve(img_url.split('?')[0], os.path.join(self.image_path, f'{code}.jpg'))
+
                 self.db[code] = {
                     'title': title,
                     'mv_code': code,
@@ -128,11 +158,13 @@ class Crawler:
                     'audience_score': audience_score,
                     'reple': reple,
                 }
+                if crawl_image:
+                    self.db[code]['image'] = img_file
                 #self.driver.back()  # 뒤로가기
                 n_data += 1
 
         n_e_data = len(self.db)
-        print('-- end --\n\n')
+        print('------ end ------\n')
         print(f'current crawled data# : {n_data}')
         print(f'total crawled data# : {n_e_data}')
 
