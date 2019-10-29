@@ -62,7 +62,7 @@ class Crawler:
             os.makedirs(self.image_path, exist_ok=True)
 
         for i, date_token in enumerate(self.daterange(start_page, end_page)):
-            if i != 0 and i % 10:  # 10페이지(MV 500개) 마다 저장
+            if i != 0 and i % 10 == 0:  # 10페이지(MV 500개) 마다 저장
                 self.save_db()
             print(f'target date: {date_token}')
 
@@ -92,7 +92,14 @@ class Crawler:
                 self.driver.get(f'https://movie.naver.com{tags["href"]}')  # 해당 영화 페이지 접속
                 self.driver.implicitly_wait(self.wt)
 
-                m_soup = BeautifulSoup(self.driver.page_source)
+                try:
+                    m_soup = BeautifulSoup(self.driver.page_source)
+                except:
+                    # 가끔 페이지가 없는 영화가 있음
+                    # ex) https://movie.naver.com/movie/sdb/rank/rmovie.nhn?sel=cnt&tg=0&date=20100722
+                    #     22. 걸파이브
+                    #     - https://movie.naver.com/movie/bi/mi/basic.nhn?code=76015
+                    continue
                 summary = m_soup.select('h5.h_tx_story')
                 summary = summary[0].text.replace('\xa0', '\n') if summary else ''
                 summary = summary.replace(' | ', '\n').replace('|', '')
