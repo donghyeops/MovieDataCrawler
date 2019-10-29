@@ -41,7 +41,7 @@ class Crawler:
     def save_db(self):
         with open(self.dataset_path, 'w', encoding='utf-8') as f:
             json.dump(self.db, f, indent='\t', ensure_ascii=False)
-        print(f'save dataset (n:{len(self.db)})')
+        print(f'save dataset ({self.dataset_path})')
 
     @staticmethod
     def daterange(start_page :str, end_page :str):
@@ -51,7 +51,7 @@ class Crawler:
             yield (start_date + dt.timedelta(n)).strftime('%Y%m%d')
 
     def start_crawling(self, start_page='20100101', end_page='20100101', crawl_image=False, naver_account=None, print_title=False):
-        print('-- start crawling --')
+        print('\n-- start crawling --')
         n_data = 0
         if naver_account:
             naver = Naver(self.driver, naver_account['id'], naver_account['pw'])
@@ -100,7 +100,7 @@ class Crawler:
                 contents = m_soup.select('p.con_tx')
                 contents = contents[0].text.replace('\xa0', '\n') if contents else ''
 
-                netizen_score = '-1'
+                netizen_score = '0'
                 try:
                     _s = m_soup.select('div.main_score > div.score')
                     ems = _s[0].select('div.star_score')[0].select('em')
@@ -111,7 +111,7 @@ class Crawler:
                     pass
                 netizen_score = float(netizen_score)
 
-                audience_score = '-1'
+                audience_score = '0'
                 try:
                     _s = m_soup.select('div.main_score > div.score_left')
                     ems = _s[0].select('div.star_score')[0].select('em')
@@ -164,9 +164,10 @@ class Crawler:
                 n_data += 1
 
         n_e_data = len(self.db)
-        print('------ end ------\n')
+        print('------- end -------\n')
         print(f'current crawled data# : {n_data}')
         print(f'total crawled data# : {n_e_data}')
+        print('')
 
         self.save_db()
 

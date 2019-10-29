@@ -3,6 +3,9 @@
 from crawler import Crawler
 import configparser
 
+import warnings
+warnings.filterwarnings("ignore")
+
 if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read(filenames='config.ini', encoding='utf-8')
