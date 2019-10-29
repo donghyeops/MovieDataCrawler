@@ -81,7 +81,7 @@ class Crawler:
                 tags = BeautifulSoup(movie, 'html.parser').select('a')[0]
                 try:
                     title = tags['title']
-                except:  # 주석 코드가 잡힌 경우
+                except KeyError:  # 주석 코드가 잡힌 경우
                     continue
                 if print_title:
                     print(f'\t - {title}')
@@ -100,51 +100,61 @@ class Crawler:
                 contents = m_soup.select('p.con_tx')
                 contents = contents[0].text.replace('\xa0', '\n') if contents else ''
 
-                netizen_score = '0'
                 try:
                     _s = m_soup.select('div.main_score > div.score')
                     ems = _s[0].select('div.star_score')[0].select('em')
                     if ems:
+                        netizen_score = '0'
                         for x in ems:
                             netizen_score += x.text
+                        netizen_score = float(netizen_score)
+                    else:
+                        netizen_score = -1
                 except IndexError:
-                    pass
-                netizen_score = float(netizen_score)
+                    netizen_score = -1
 
-                audience_score = '0'
                 try:
                     _s = m_soup.select('div.main_score > div.score_left')
                     ems = _s[0].select('div.star_score')[0].select('em')
                     if ems:
+                        audience_score = '0'
                         for x in ems:
                             audience_score += x.text
+                        audience_score = float(audience_score)
+                    else:
+                        audience_score = -1
                 except IndexError:
-                    pass
-                audience_score = float(audience_score)
+                    audience_score = -1
 
-                reple = ''
                 try:
                     reple = m_soup.select('div.score_reple > p')
                     reple = reple[0].text.replace('\xa0', '\n') if reple else ''
                     reple = reple.lstrip().rstrip()
                 except IndexError:
-                    pass
-
-                spec = m_soup.select('dl.info_spec > dd > p')[0].select('span')
+                    reple = ''
 
                 categories = []
-                for cat in spec[0].select('a'):
-                    categories.append(cat.text)
-
                 countries = []
-                for cou in spec[1].select('a'):
-                    countries.append(cou.text)
+                try:
+                    spec = m_soup.select('dl.info_spec > dd > p')[0].select('span')
+                    for cat in spec[0].select('a'):
+                        categories.append(cat.text)
+                    for cou in spec[1].select('a'):
+                        countries.append(cou.text)
+                except IndexError:
+                    pass
 
-                showtime = int(self.int_parser.findall(spec[2].text)[0])
+                try:
+                    showtime = int(self.int_parser.findall(spec[2].text)[0])
+                except IndexError:
+                    showtime = 0
 
                 if crawl_image:
-                    img_url = m_soup.select('div.poster')[0].select('img')[0]['src']
-                    img_file, _ = request.urlretrieve(img_url.split('?')[0], os.path.join(self.image_path, f'{code}.jpg'))
+                    try:
+                        img_url = m_soup.select('div.poster')[0].select('img')[0]['src']
+                        img_file, _ = request.urlretrieve(img_url.split('?')[0], os.path.join(self.image_path, f'{code}.jpg'))
+                    except IndexError:
+                        img_file = None
 
                 self.db[code] = {
                     'title': title,
